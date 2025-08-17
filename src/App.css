@@ -298,6 +298,10 @@ body {
 }
 
 .bottle-group h2 {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* Добавляем фон, чтобы контент под ним не просвечивал */
+  z-index: 10; /* Устанавливаем z-index, чтобы заголовок был поверх других элементов */
   font-size: 1.4em;
   color: #34495e;
   border-bottom: 2px solid #ecf0f1;

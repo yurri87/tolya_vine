@@ -49,12 +49,30 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
     return acc;
   }, { active: {}, completed: [], archived: [], error: [] });
 
+  // --- Функция для склонения слова "день" ---
+  const getDayNounPluralForm = (number) => {
+    const n = Math.abs(number);
+    const lastDigit = n % 10;
+    const lastTwoDigits = n % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+      return 'дней';
+    }
+    if (lastDigit === 1) {
+      return 'день';
+    }
+    if ([2, 3, 4].includes(lastDigit)) {
+      return 'дня';
+    }
+    return 'дней';
+  };
+
   // --- Вспомогательная функция для заголовков групп ---
   const getGroupTitle = (daysKey) => {
     if (daysKey === 'today') return "Сегодня";
     const dayNum = parseInt(daysKey, 10);
     if (dayNum === 1) return "Завтра";
-    return `Через ${dayNum} дня`;
+    return `Через ${dayNum} ${getDayNounPluralForm(dayNum)}`;
   };
 
   // --- Вспомогательный компонент для рендера группы ---
