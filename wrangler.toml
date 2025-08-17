@@ -6,5 +6,5 @@ compatibility_date = "2023-10-30"
 # Когда вы создадите его в панели управления Cloudflare, вы вставите сюда ID.
 [[kv_namespaces]]
 binding = "VINE_KV"
-id = "вставьте_ваш_id_здесь"
-preview_id = "вставьте_ваш_preview_id_здесь"
+id = "ca3fa991ebf84e7daa9946036bfbf302"
+preview_id = "ca3fa991ebf84e7daa9946036bfbf302"
