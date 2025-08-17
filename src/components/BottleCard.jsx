@@ -1,4 +1,5 @@
 import React from 'react';
+import './BottleCard.css';
 import { Button } from './ui/button';
 import { Pencil } from 'lucide-react';
 
@@ -24,22 +25,32 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle }) => {
             {bottle.name || 'Без названия'}
             {bottle.finalVolume && <span className="bottle-volume">({bottle.finalVolume.toFixed(1)} л)</span>}
           </h3>
-          <p className="start-date">{formattedStartDate}</p>
+          <div className="header-right-controls">
+            <p className="start-date">{formattedStartDate}</p>
+            <Button variant="ghost" size="icon" onClick={() => onEditBottle(bottle)} className="btn-edit-card">
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="bottle-steps">
           {bottle.steps.map((step) => (
-            <div key={step.day} className={`step ${step.isCompleted ? 'completed' : ''}`}>
-              <span><strong>День {step.day}:</strong> {step.title}</span>
-              {!step.isCompleted && nextStep && step.day === nextStep.day && (
-                 <Button 
-                    size="sm"
-                    onClick={() => onUpdateStep(bottle.id, step.day)} 
-                    className="btn-complete-step"
-                  >
-                    Выполнено
-                  </Button>
-              )}
+            <div key={step.day} className={`step-row ${step.isCompleted ? 'completed' : ''}`}>
+              <div className="step-day">
+                <strong>День {step.day}</strong>
+              </div>
+              <div className="step-title">{step.title}</div>
+              <div className="step-action">
+                {!step.isCompleted && nextStep && step.day === nextStep.day && (
+                  <Button 
+                      size="sm"
+                      onClick={() => onUpdateStep(bottle.id, step.day)} 
+                      className="btn-complete-step"
+                    >
+                      Выполнено
+                    </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -52,11 +63,7 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle }) => {
 
       </div>
 
-      <div className="card-actions">
-        <Button variant="ghost" size="icon" onClick={() => onEditBottle(bottle)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
-      </div>
+
     </div>
   );
 };

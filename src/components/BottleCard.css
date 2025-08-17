@@ -1,0 +1,119 @@
+/* === Bottle Card Styles === */
+
+.bottle-card {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid; /* Will be colored by status */
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.bottle-card.status-in-progress {
+  border-left-color: #3498db; /* Blue for 'in progress' */
+}
+
+.bottle-card.status-action-required {
+  border-left-color: #f39c12; /* Orange */
+}
+
+.bottle-card.status-completed {
+  border-left-color: #2ecc71; /* Green */
+}
+
+.bottle-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.bottle-card-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+}
+
+.bottle-title {
+  margin-right: 16px; /* Отступ между названием и датой */
+}
+
+.start-date {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #718096;
+  white-space: nowrap; /* Чтобы дата не переносилась */
+}
+
+.card-main-content {
+  flex-grow: 1;
+}
+
+.header-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Расстояние между датой и кнопкой */
+}
+
+.bottle-notes {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.bottle-volume {
+  font-size: 0.8em;
+  font-weight: 400;
+  color: #7f8c8d;
+  margin-left: 8px;
+}
+
+.bottle-steps {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-row {
+	margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+	margin-bottom: 15px;
+}
+
+.step-row.completed .step-title,
+.step-row.completed .step-day {
+  color: #95a5a6;
+  text-decoration: line-through;
+}
+
+.step-day {
+  flex: 0 0 70px; /* Фиксированная ширина для колонки с днем */
+}
+
+.step-title {
+  flex: 1 1 200px; /* Гибкая ширина для названия */
+  color: #555;
+}
+
+.step-action {
+  flex: 0 0 100px; /* Фиксированная ширина для кнопки */
+  text-align: right;
+}
+
+.btn-complete-step {
+  padding: 3px 8px;
+  font-size: 12px;
+  background-color: #f39c12;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
