@@ -28,7 +28,7 @@ function App() {
   }, [fetchBottles]);
 
   const prepareBottleData = (bottleData) => {
-    const { name, mass, startDate, id } = bottleData;
+    const { name, mass, description, startDate, id } = bottleData;
     
     const v = mass / 0.6;
     const z1 = v * 0.3;
@@ -45,6 +45,8 @@ function App() {
     return {
       id,
       name,
+      mass, // Добавлено поле mass
+      description, // Поле переименовано
       startDate,
       finalVolume,
       totalSugar: z1 + z2 + z3,
@@ -168,6 +170,7 @@ function App() {
             bottleToEdit={editingBottle}
             onSave={handleSaveBottle}
             onCancel={handleCancelForm}
+            onDelete={handleDeleteBottle}
           />
         </div>
       )}

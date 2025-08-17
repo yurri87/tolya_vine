@@ -7,64 +7,75 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const AddBottleForm = ({ bottleToEdit, onSave, onCancel }) => {
-  const [name, setName] = useState('');
+const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
   const [mass, setMass] = useState('');
+  const [name, setName] = useState('без названия');
+  const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
     if (bottleToEdit) {
-      setName(bottleToEdit.name || '');
       setMass(bottleToEdit.mass || '');
+      setName(bottleToEdit.name || 'без названия');
+      setDescription(bottleToEdit.description || '');
       setStartDate(bottleToEdit.startDate ? new Date(bottleToEdit.startDate) : new Date());
     } else {
-      setName('');
+      // Reset form for new bottle
       setMass('');
+      setName('без названия');
+      setDescription('');
       setStartDate(new Date());
     }
   }, [bottleToEdit]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !mass) {
-      alert('Пожалуйста, заполните все поля.');
+    if (!mass) {
+      alert('Пожалуйста, укажите массу сырья.');
       return;
     }
 
     const bottleData = {
-      name,
+      name: name || 'без названия',
       mass: parseFloat(mass),
+      description,
       startDate: format(startDate, 'yyyy-MM-dd'),
     };
 
-    if (bottleToEdit && bottleToEdit.id) {
-      bottleData.id = bottleToEdit.id;
-    }
-
-    onSave(bottleData);
+    onSave({ ...bottleData, id: bottleToEdit?.id });
   };
 
   return (
-    // Я убрал оборачивающий div, который ломал позиционирование
-    <form onSubmit={handleSubmit} className="add-bottle-form bg-white p-6 rounded-lg shadow-lg z-20">
+    <form onSubmit={handleSubmit} className="add-bottle-form">
       <h2>{bottleToEdit ? 'Редактировать бутыль' : 'Добавить новую бутыль'}</h2>
+      <div className="form-group">
+        <label>Масса ягод, кг</label>
+        <Input 
+          type="number" 
+          value={mass}
+          onChange={(e) => setMass(e.target.value)}
+          placeholder="Например, 5.5"
+          required 
+          step="0.1"
+        />
+      </div>
       <div className="form-group">
         <label>Название</label>
         <Input 
           type="text" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          placeholder="Например, Изабелла 2025"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="То же что на бутылке"
         />
       </div>
       <div className="form-group">
-        <label>Масса ягод (кг)</label>
-        <Input 
-          type="number" 
-          value={mass} 
-          onChange={(e) => setMass(e.target.value)} 
-          placeholder="Например, 5.5"
+        <label>Примечания</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Любые заметки..."
+          className="notes-textarea"
         />
       </div>
       <div className="form-group">
@@ -92,8 +103,21 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel }) => {
         </Popover>
       </div>
       <div className="form-actions">
-        <Button type="submit">{bottleToEdit ? 'Сохранить' : 'Добавить'}</Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>Отмена</Button>
+        <div className="form-actions-left">
+          {bottleToEdit && (
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={() => onDelete(bottleToEdit.id)}
+            >
+              Удалить
+            </Button>
+          )}
+        </div>
+        <div className="form-actions-right">
+          <Button type="button" variant="ghost" onClick={onCancel}>Отмена</Button>
+          <Button type="submit">{bottleToEdit ? 'Сохранить' : 'Добавить'}</Button>
+        </div>
       </div>
     </form>
   );
