@@ -83,7 +83,7 @@
 .step-row {
 	margin-top: 15px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
 	margin-bottom: 15px;
 }

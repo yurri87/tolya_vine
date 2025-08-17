@@ -39,7 +39,7 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle }) => {
               <div className="step-day">
                 <strong>День {step.day}</strong>
               </div>
-              <div className="step-title">{step.title}</div>
+              <div className="step-title">{step.ingredients}</div>
               <div className="step-action">
                 {!step.isCompleted && nextStep && step.day === nextStep.day && (
                   <Button 

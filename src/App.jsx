@@ -135,6 +135,7 @@ function App() {
           body: JSON.stringify({ id: bottleId }),
         });
         await fetchBottles();
+        handleCancelForm(); // Close the modal after deletion
       } catch (error) {
         console.error('Error deleting bottle:', error);
       }
