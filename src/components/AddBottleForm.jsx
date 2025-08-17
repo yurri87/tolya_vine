@@ -1,98 +1,101 @@
 import React, { useState, useEffect } from 'react';
-
-import { DatePicker } from './ui/date-picker';
-
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Calendar } from './ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const AddBottleForm = ({ bottleToEdit, onSave, onCancel }) => {
-  const [bottle, setBottle] = useState({
-    name: '',
-    mass: '',
-    startDate: new Date(),
-  });
+  const [name, setName] = useState('');
+  const [mass, setMass] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
-    if (bottleToEdit && bottleToEdit.id) {
-      setBottle({
-        ...bottleToEdit,
-        startDate: new Date(bottleToEdit.startDate),
-      });
+    if (bottleToEdit) {
+      setName(bottleToEdit.name || '');
+      setMass(bottleToEdit.mass || '');
+      setStartDate(bottleToEdit.startDate ? new Date(bottleToEdit.startDate) : new Date());
     } else {
-      setBottle({
-        name: '',
-        mass: '',
-        startDate: new Date(),
-      });
+      setName('');
+      setMass('');
+      setStartDate(new Date());
     }
   }, [bottleToEdit]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setBottle({ ...bottle, [name]: value });
-  };
-
-  const handleDateChange = (date) => {
-    setBottle(prev => ({ ...prev, startDate: date }));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!bottle.mass) {
-      alert('Пожалуйста, заполните массу ягод.');
+    if (!name || !mass) {
+      alert('Пожалуйста, заполните все поля.');
       return;
     }
-    const bottleToSave = {
-      ...bottle,
-      startDate: bottle.startDate.toISOString().split('T')[0],
+
+    const bottleData = {
+      name,
+      mass: parseFloat(mass),
+      startDate: format(startDate, 'yyyy-MM-dd'),
     };
-    onSave(bottleToSave);
+
+    if (bottleToEdit && bottleToEdit.id) {
+      bottleData.id = bottleToEdit.id;
+    }
+
+    onSave(bottleData);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-card text-card-foreground p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-lg font-semibold text-center mb-4">
-          {bottleToEdit && bottleToEdit.id ? 'Редактировать бутыль' : 'Добавить новую бутыль'}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="name" className="block mb-2 text-sm font-medium">Название (например, "Партия 1")</label>
-            <Input
-              id="name"
-              type="text"
-              name="name"
-              value={bottle.name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="mass" className="block mb-2 text-sm font-medium">Масса ягод (кг)</label>
-            <Input
-              id="mass"
-              type="number"
-              name="mass"
-              value={bottle.mass}
-              onChange={handleChange}
-              required
-              step="0.1"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium">Дата начала</label>
-            <DatePicker date={bottle.startDate} onDateChange={handleDateChange} />
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="secondary" onClick={onCancel}>
-              Отмена
-            </Button>
-            <Button type="submit">
-              Сохранить
-            </Button>
-          </div>
-        </form>
+    // Я убрал оборачивающий div, который ломал позиционирование
+    <form onSubmit={handleSubmit} className="add-bottle-form bg-white p-6 rounded-lg shadow-lg z-20">
+      <h2>{bottleToEdit ? 'Редактировать бутыль' : 'Добавить новую бутыль'}</h2>
+      <div className="form-group">
+        <label>Название</label>
+        <Input 
+          type="text" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          placeholder="Например, Изабелла 2025"
+        />
       </div>
-    </div>
+      <div className="form-group">
+        <label>Масса ягод (кг)</label>
+        <Input 
+          type="number" 
+          value={mass} 
+          onChange={(e) => setMass(e.target.value)} 
+          placeholder="Например, 5.5"
+        />
+      </div>
+      <div className="form-group">
+        <label>Дата начала</label>
+        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button variant={"outline"}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {startDate ? format(startDate, "PPP", { locale: ru }) : <span>Выберите дату</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 z-[1001]">
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={(date) => {
+                  setStartDate(date);
+                  setIsCalendarOpen(false);
+                }}
+              initialFocus
+              locale={ru}
+              disabled={(date) => date > new Date()}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+      <div className="form-actions">
+        <Button type="submit">{bottleToEdit ? 'Сохранить' : 'Добавить'}</Button>
+        <Button type="button" variant="ghost" onClick={onCancel}>Отмена</Button>
+      </div>
+    </form>
   );
 };
 

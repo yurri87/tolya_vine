@@ -6,6 +6,7 @@ import './App.css';
 function App() {
   const [bottles, setBottles] = useState([]);
   const [editingBottle, setEditingBottle] = useState(null);
+  const [isFormVisible, setIsFormVisible] = useState(false);
 
   // --- API Communication ---
 
@@ -19,16 +20,13 @@ function App() {
       setBottles(data);
     } catch (error) {
       console.error('Failed to fetch bottles:', error);
-      // Here you could set an error state to show a message to the user
     }
   }, []);
 
-  // Fetch bottles on initial component mount
   useEffect(() => {
     fetchBottles();
   }, [fetchBottles]);
 
-  // --- Helper function to calculate steps (remains the same) ---
   const prepareBottleData = (bottleData) => {
     const { name, mass, startDate, id } = bottleData;
     
@@ -78,8 +76,6 @@ function App() {
     };
   };
 
-  // --- CRUD Handlers ---
-
   const handleSaveBottle = async (bottleData) => {
     const isUpdating = !!bottleData.id;
     const bottleWithSteps = prepareBottleData(
@@ -97,8 +93,9 @@ function App() {
         throw new Error('Failed to save bottle');
       }
       
-      await fetchBottles(); // Refetch for consistency
-      setEditingBottle(null); // Close form
+      await fetchBottles();
+      setEditingBottle(null);
+      setIsFormVisible(false); // <-- Вот это исправление
 
     } catch (error) {
       console.error('Error saving bottle:', error);
@@ -142,8 +139,14 @@ function App() {
     }
   };
 
+  const handleEditBottle = (bottle) => {
+    setEditingBottle(bottle);
+    setIsFormVisible(true);
+  };
+
   const handleCancelForm = () => {
     setEditingBottle(null);
+    setIsFormVisible(false);
   };
 
   return (
@@ -153,15 +156,20 @@ function App() {
         bottles={bottles.filter(b => !b.isArchived)}
         onUpdateStep={handleUpdateStep}
         onDeleteBottle={handleDeleteBottle}
-        onEditBottle={setEditingBottle}
-        onAddBottleClick={() => setEditingBottle({})} 
+        onEditBottle={handleEditBottle}
+        onAddBottleClick={() => {
+          setEditingBottle(null);
+          setIsFormVisible(true);
+        }} 
       />
-      {editingBottle && (
-        <AddBottleForm 
-          bottleToEdit={editingBottle}
-          onSave={handleSaveBottle}
-          onCancel={handleCancelForm}
-        />
+      {isFormVisible && (
+        <div className="modal-overlay">
+          <AddBottleForm 
+            bottleToEdit={editingBottle}
+            onSave={handleSaveBottle}
+            onCancel={handleCancelForm}
+          />
+        </div>
       )}
     </div>
   );
