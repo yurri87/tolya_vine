@@ -6,8 +6,10 @@ export default async function handler(request, response) {
   switch (method) {
     case 'GET':
       try {
-        const bottles = await kv.hgetall('bottles');
-        return response.status(200).json(bottles || {});
+        const bottlesObject = await kv.hgetall('bottles');
+        // Convert the object of bottles into an array of bottles for the frontend
+        const bottlesArray = bottlesObject ? Object.values(bottlesObject) : [];
+        return response.status(200).json(bottlesArray);
       } catch (error) {
         return response.status(500).json({ error: error.message });
       }
