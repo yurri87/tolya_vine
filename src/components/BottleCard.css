@@ -26,12 +26,15 @@
 .bottle-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   width: 100%;
   margin-bottom: 12px;
 }
 
-.bottle-card-header h3 {
+.bottle-card-header .bottle-title {
+	display: flex;
+	align-items: center;
+	text-transform: uppercase;
   margin: 0;
   font-size: 1.2rem;
   color: #2d3748;
@@ -87,6 +90,42 @@
   gap: 10px;
 	margin-bottom: 15px;
 }
+
+/* === Progress Bar === */
+.progress-bar-container {
+  position: relative; /* Нужно для позиционирования псевдо-элемента */
+  width: 100%;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; /* Размещаем поверх .progress-bar */
+  background-image: repeating-linear-gradient(
+    90deg,
+    black, /* Абсолютно черный цвет */
+    black 1px,
+    transparent 1px,
+    transparent calc(100% / 13)
+  );
+  background-position: -1px 0; /* Сдвигаем фон, чтобы скрыть первую линию */
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #27ae60; /* Green for progress */
+  transition: width 0.4s ease-in-out;
+}
+
 
 .step-row.completed .step-title,
 .step-row.completed .step-day {

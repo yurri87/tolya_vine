@@ -76,7 +76,7 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
   };
 
   // --- Вспомогательный компонент для рендера группы ---
-  const BottleGroup = ({ title, groupBottles, alwaysShow = false }) => {
+  const BottleGroup = ({ title, groupBottles, alwaysShow = false, isToday = false }) => {
     if (!alwaysShow && (!groupBottles || groupBottles.length === 0)) return null;
     return (
       <div className="bottle-group">
@@ -84,7 +84,7 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
         <div className="cards-container">
           {groupBottles && groupBottles.length > 0 ? (
             groupBottles.map(bottle => (
-              <BottleCard key={bottle.id} bottle={bottle} {...cardProps} />
+              <BottleCard key={bottle.id} bottle={bottle} {...cardProps} isToday={isToday} />
             ))
           ) : (
             <p className="empty-group-message">Нет задач на завтра.</p>
@@ -115,6 +115,7 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
               <BottleGroup 
                 title="Сегодня" 
                 groupBottles={groupedBottles.active.today} 
+                isToday={true}
               />
             )}
 
