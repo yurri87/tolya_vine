@@ -40,11 +40,11 @@ export default async function handler(request, response) {
 
     case 'DELETE':
       try {
-        const { id } = request.query;
+        const { id } = request.body;
         if (!id) {
           return response.status(400).json({ error: 'Bottle ID is required' });
         }
-        await kv.hdel('bottles', id);
+        await kv.hdel('bottles', String(id)); // Ensure ID is a string for kv
         return response.status(204).send(null);
       } catch (error) {
         return response.status(500).json({ error: error.message });

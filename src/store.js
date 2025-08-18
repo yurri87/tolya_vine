@@ -23,20 +23,21 @@ const prepareBottleData = (bottleData) => {
   // Создание предопределенных шагов
   const steps = [
     {
+      day: 1,
+      name: 'Начальный расклад',
+      ingredients: `Сахар: ${z1.toFixed(2)} кг, Вода: ${y1.toFixed(2)} л`,
+      isCompleted: true, // Первый шаг выполнен при создании
+    },
+    {
       day: 10,
       name: 'Добавление сахара и воды',
-      ingredients: {
-        sugar: z2.toFixed(2), // кг
-        water: y2.toFixed(2), // л
-      },
+      ingredients: `Сахар: ${z2.toFixed(2)} кг, Вода: ${y2.toFixed(2)} л`,
       isCompleted: false,
     },
     {
       day: 13,
       name: 'Финальное добавление сахара',
-      ingredients: {
-        sugar: z3.toFixed(2), // кг
-      },
+      ingredients: `Сахар: ${z3.toFixed(2)} кг`,
       isCompleted: false,
     },
   ];

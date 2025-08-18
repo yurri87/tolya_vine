@@ -41,7 +41,7 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
         <div className="bottle-card-header">
           <div className="bottle-title">
             {bottle.name || 'Без названия'}
-            {bottle.finalVolume && <span className="bottle-volume">({bottle.finalVolume.toFixed(1)} л)</span>}
+            {bottle.mass && <span className="bottle-volume">({bottle.mass} кг)</span>}
           </div>
           <div className="header-right-controls">
             <p className="start-date">{formattedStartDate}</p>
