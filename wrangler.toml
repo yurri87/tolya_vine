@@ -1,5 +1,4 @@
 name = "tolya-vine-api"
-main = "api/index.js"
 compatibility_date = "2023-10-30"
 
 # Это место для привязки нашего хранилища Cloudflare KV.
