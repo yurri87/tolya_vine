@@ -98,7 +98,6 @@
   background-color: #e9ecef;
   border-radius: 4px;
   height: 8px;
-  overflow: hidden;
   margin-bottom: 12px;
 }
 
@@ -124,6 +123,31 @@
   height: 100%;
   background-color: #43d145; /* Green for progress */
   transition: width 0.4s ease-in-out;
+}
+
+/* --- Milestones over progress bar --- */
+.progress-milestones {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2; /* выше сетки ::after */
+  pointer-events: none; /* клики проходят сквозь */
+}
+
+.progress-milestones .milestone {
+  position: absolute;
+  top: -8px;
+  width: 2px;
+  height: 24px;
+  background: black;
+  border-radius: 1px;
+}
+
+.progress-milestones .milestone-next {
+  background: red;
+    width: 4px;
 }
 
 

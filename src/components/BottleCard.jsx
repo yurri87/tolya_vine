@@ -68,6 +68,14 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
     progress = Math.min(100, (minutesPassed / totalMinutes) * 100);
   }
 
+  // Позиции майлстоунов по шагам (в процентах ширины бара)
+  const milestones = (bottle.steps || [])
+    .filter(s => Number.isFinite(s.day) && s.day > 0)
+    .map(s => ({
+      day: s.day,
+      left: lastStepDay > 0 ? (s.day / lastStepDay) * 100 : 0,
+    }));
+
   return (
     <div 
       className={`bottle-card ${getStatusClass()}`}
@@ -75,6 +83,16 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
     >
       <div className="progress-bar-container">
         <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+        <div className="progress-milestones">
+          {milestones.map((m) => (
+            <span
+              key={m.day}
+              className={`milestone ${nextStep && nextStep.day === m.day ? 'milestone-next' : ''}`}
+              style={{ left: `calc(${m.left}% - 1px)` }}
+              title={`День ${m.day}`}
+            />
+          ))}
+        </div>
       </div>
       <div className="card-main-content">
         <div className="bottle-card-header">
