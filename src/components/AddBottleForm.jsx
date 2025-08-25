@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Calendar } from './ui/calendar';
@@ -65,6 +65,17 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
 
   // Вспомогательно: формируем подпись для кнопки времени
   const timeLabel = () => timeStr || '00:00';
+
+  // Явный обработчик завершения выбора минут
+  const onMinutesChoosed = (newValue) => {
+    const finalH = newValue.hour();
+    const finalM = newValue.minute();
+    const d = new Date(startDate);
+    d.setHours(finalH, finalM, 0, 0);
+    setStartDate(d);
+    setIsTimeOpen(false);
+    setTimeView('hours');
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -158,7 +169,20 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                 {timeLabel()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="z-[1001]" style={{ padding: 8 }}>
+            <PopoverContent
+              className="z-[1001]"
+              style={{ padding: 8 }}
+              onPointerUpCapture={() => {
+                if (timeView === 'minutes') {
+                  onMinutesChoosed(clockValue);
+                }
+              }}
+              onTouchEndCapture={() => {
+                if (timeView === 'minutes') {
+                  onMinutesChoosed(clockValue);
+                }
+              }}
+            >
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <TimeClock
@@ -180,14 +204,8 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                           // После выбора часа — переходим к минутам
                           setTimeView('minutes');
                         } else if (timeView === 'minutes') {
-                          // После выбора минут — фиксируем в startDate и закрываем
-                          const finalH = newValue.hour();
-                          const finalM = newValue.minute();
-                          const d = new Date(startDate);
-                          d.setHours(finalH, finalM, 0, 0);
-                          setStartDate(d);
-                          setIsTimeOpen(false);
-                          setTimeView('hours');
+                          // После выбора минут — фиксируем и закрываем
+                          onMinutesChoosed(newValue);
                         }
                       }
                     }}
