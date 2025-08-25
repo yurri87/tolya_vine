@@ -56,14 +56,16 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
   }, []);
 
   const today = new Date();
-  const daysPassed = Math.max(0, Math.floor((today - startDate) / (1000 * 60 * 60 * 24)));
   const lastStepDay = bottle.steps.length > 0 ? Math.max(...bottle.steps.map(s => s.day)) : 1;
+  // Прогресс считаем по минутам (более точный и плавный, чем по дням)
+  const minutesPassed = Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60)));
+  const totalMinutes = Math.max(1, lastStepDay * 24 * 60);
 
   let progress = 0;
   if (allStepsCompleted) {
     progress = 100;
   } else if (lastStepDay > 0) {
-    progress = Math.min(100, (daysPassed / lastStepDay) * 100);
+    progress = Math.min(100, (minutesPassed / totalMinutes) * 100);
   }
 
   return (
