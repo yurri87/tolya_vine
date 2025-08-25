@@ -117,9 +117,9 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
           ))}
         </div>
 
-        {bottle.notes && (
+        {(bottle.description || bottle.notes) && (
             <div className="bottle-notes">
-                <p><strong>Примечания:</strong> {bottle.notes}</p>
+                <p><strong>Примечания:</strong> {bottle.description || bottle.notes}</p>
             </div>
         )}
 
