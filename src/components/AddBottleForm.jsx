@@ -32,8 +32,8 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
     if (bottleToEdit) {
       setMass(bottleToEdit.mass || '');
       setName(bottleToEdit.name || 'без названия');
-      // Загружаем примечание из description или из устаревшего поля notes
-      setDescription(bottleToEdit.description || bottleToEdit.notes || '');
+      // Используем только description как каноничное поле
+      setDescription(bottleToEdit.description || '');
       const dt = bottleToEdit.startDate ? new Date(bottleToEdit.startDate) : new Date();
       setStartDate(dt);
       setTimeStr(format(dt, 'HH:mm'));
@@ -78,8 +78,6 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
       name: name || 'без названия',
       mass: parseFloat(mass),
       description,
-      // Дублируем в notes для обратной совместимости и отображения
-      notes: description,
       startDate: combined.toISOString(),
     };
 

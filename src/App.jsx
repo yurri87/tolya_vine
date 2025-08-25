@@ -47,7 +47,6 @@ function App() {
       name,
       mass, // Добавлено поле mass
       description, // Поле переименовано
-      notes: description, // Дублируем для обратной совместимости
       startDate,
       finalVolume,
       totalSugar: z1 + z2 + z3,
