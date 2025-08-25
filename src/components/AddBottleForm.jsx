@@ -68,6 +68,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
 
   // Явный обработчик завершения выбора минут
   const onMinutesChoosed = (newValue) => {
+    // Без конверсий: берём значения напрямую из Dayjs
     const finalH = newValue.hour();
     const finalM = newValue.minute();
     const d = new Date(startDate);
@@ -169,20 +170,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                 {timeLabel()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent
-              className="z-[1001]"
-              style={{ padding: 8 }}
-              onPointerUpCapture={() => {
-                if (timeView === 'minutes') {
-                  onMinutesChoosed(clockValue);
-                }
-              }}
-              onTouchEndCapture={() => {
-                if (timeView === 'minutes') {
-                  onMinutesChoosed(clockValue);
-                }
-              }}
-            >
+            <PopoverContent className="z-[1001]" style={{ padding: 8 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <TimeClock
@@ -193,18 +181,17 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                     sx={{ width: 272, height: 272 }}
                     onChange={(newValue, context) => {
                       if (!newValue) return;
-                      // newValue - Dayjs; синхронизируем локальное время
-                      const h = String(newValue.hour()).padStart(2, '0');
-                      const m = String(newValue.minute()).padStart(2, '0');
-                      setClockValue(newValue);
-                      setTimeStr(`${h}:${m}`);
-                      // Надёжная логика финализации выбора
+                      // Без конверсий: прямо из Dayjs -> строка HH:mm
+                      const hStr = String(newValue.hour()).padStart(2, '0');
+                      const mStr = String(newValue.minute()).padStart(2, '0');
+                      setClockValue(newValue.second(0).millisecond(0));
+                      setTimeStr(`${hStr}:${mStr}`);
+                      // Финализация выбора по событию MUI
+                      const currentView = context?.view || timeView;
                       if (context && context.selectionState === 'finish') {
-                        if (timeView === 'hours') {
-                          // После выбора часа — переходим к минутам
+                        if (currentView === 'hours') {
                           setTimeView('minutes');
-                        } else if (timeView === 'minutes') {
-                          // После выбора минут — фиксируем и закрываем
+                        } else if (currentView === 'minutes') {
                           onMinutesChoosed(newValue);
                         }
                       }
