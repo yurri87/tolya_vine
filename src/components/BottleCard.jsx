@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './BottleCard.css';
 import { Button } from './ui/button';
 import { Pencil } from 'lucide-react';
@@ -11,12 +11,49 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
   const nextStep = bottle.steps.find(s => !s.isCompleted);
   const allStepsCompleted = !nextStep;
 
+  // Точное время до следующего шага (часы/минуты, с днями при необходимости)
+  const getTimeRemainingLabel = () => {
+    if (!nextStep || !nextStep.date) return '';
+    const next = new Date(nextStep.date);
+    if (isNaN(next.getTime())) return '';
+    const now = new Date();
+    let diffMs = next.getTime() - now.getTime();
+    const isPast = diffMs <= 0;
+    diffMs = Math.abs(diffMs);
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const hourMs = 60 * 60 * 1000;
+    const minuteMs = 60 * 1000;
+
+    const days = Math.floor(diffMs / dayMs);
+    diffMs %= dayMs;
+    const hours = Math.floor(diffMs / hourMs);
+    diffMs %= hourMs;
+    const minutes = Math.floor(diffMs / minuteMs);
+
+    const parts = [];
+    if (days > 0) parts.push(`${days} д`);
+    if (hours > 0 || days > 0) parts.push(`${hours} ч`);
+    parts.push(`${minutes} мин`);
+
+    return isPast ? `Просрочено на ${parts.join(' ')}` : `Через ${parts.join(' ')}`;
+  };
+
   const getStatusClass = () => {
     if (allStepsCompleted) return 'status-completed';
     const nextStepDate = new Date(nextStep.date);
     if (nextStepDate <= new Date()) return 'status-action-required';
     return 'status-in-progress';
   };
+
+  // Таймер для автообновления метки оставшегося времени
+  useEffect(() => {
+    const id = setInterval(() => {
+      // обновляем состояние, чтобы реактивно пересчитать лейбл
+      setForceShowButton((v) => v);
+    }, 30 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const today = new Date();
   const daysPassed = Math.max(0, Math.floor((today - startDate) / (1000 * 60 * 60 * 24)));
@@ -57,7 +94,14 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
               <div className="step-day">
                 <strong>День {step.day}</strong>
               </div>
-              <div className="step-title">{step.ingredients}</div>
+              <div className="step-title">
+                {step.ingredients}
+                {!step.isCompleted && nextStep && step.day === nextStep.day && (
+                  <span className="step-time-remaining" style={{ marginLeft: 8, color: '#64748b', fontSize: 12 }}>
+                    {getTimeRemainingLabel()}
+                  </span>
+                )}
+              </div>
               <div className="step-action">
                 {!step.isCompleted && nextStep && step.day === nextStep.day && (isToday || forceShowButton) && (
                   <Button 

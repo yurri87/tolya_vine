@@ -3,23 +3,25 @@ import BottleCard from './BottleCard';
 
 const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
 
-  // --- Вспомогательная функция для расчета дней до следующего действия ---
+  // --- Вспомогательная функция: точный расчет до следующего действия ---
+  // Возвращает:
+  //  - 'invalid_date' для битых дат
+  //  - Infinity если все шаги выполнены
+  //  - целое количество дней (0 = сегодня, 1 = завтра, 2+ = будущее)
   const getDaysUntilNextAction = (bottle) => {
     const nextStep = bottle.steps.find(s => !s.isCompleted);
     if (!nextStep) return Infinity; // Все шаги выполнены
 
-    // --- ЗАЩИТА ОТ НЕВАЛИДНЫХ ДАННЫХ ---
-    if (!nextStep.date || isNaN(new Date(nextStep.date).getTime())) {
-      return 'invalid_date'; // Возвращаем специальный ключ для группировки
-    }
+    if (!nextStep.date) return 'invalid_date';
+    const nextTs = new Date(nextStep.date).getTime();
+    if (isNaN(nextTs)) return 'invalid_date';
 
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Сравниваем только даты, без времени
-    const nextStepDate = new Date(nextStep.date);
-    nextStepDate.setHours(0, 0, 0, 0);
+    const nowTs = Date.now();
+    const diffMs = nextTs - nowTs;
+    if (diffMs <= 0) return 0; // Просрочено или сегодня — считаем как "сегодня"
 
-    const diffTime = nextStepDate - now;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const dayMs = 24 * 60 * 60 * 1000;
+    return Math.floor(diffMs / dayMs);
   };
 
   // --- Группировка бутылей по дням ---
