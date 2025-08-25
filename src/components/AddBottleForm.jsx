@@ -78,6 +78,31 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
     setTimeView('hours');
   };
 
+  // Обработчик изменений TimeClock (вынесен из JSX)
+  const handleTimeChange = (newValue, context) => {
+    if (!newValue) return;
+    const currentView = context?.view || timeView;
+    // Меняем только активную часть времени
+    const merged = currentView === 'hours'
+      ? clockValue.hour(newValue.hour())
+      : clockValue.minute(newValue.minute());
+
+    const norm = merged.second(0).millisecond(0);
+    setClockValue(norm);
+    setTimeStr(`${String(norm.hour()).padStart(2, '0')}:${String(norm.minute()).padStart(2, '0')}`);
+
+    // После завершения выбора часа — переключаемся на минуты
+    if (currentView === 'hours' && context && context.selectionState === 'finish') {
+      setTimeView('minutes');
+    }
+  };
+
+  // Явное подтверждение выбора времени
+  const handleTimeOk = () => {
+    const norm = clockValue.second(0).millisecond(0);
+    onMinutesChoosed(norm);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!mass) {
@@ -178,26 +203,19 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                     views={["hours", "minutes"]}
                     view={timeView}
                     onViewChange={(v) => setTimeView(v)}
-                    sx={{ width: 272, height: 272 }}
-                    onChange={(newValue, context) => {
-                      if (!newValue) return;
-                      // Без конверсий: прямо из Dayjs -> строка HH:mm
-                      const hStr = String(newValue.hour()).padStart(2, '0');
-                      const mStr = String(newValue.minute()).padStart(2, '0');
-                      setClockValue(newValue.second(0).millisecond(0));
-                      setTimeStr(`${hStr}:${mStr}`);
-                      // Финализация выбора по событию MUI
-                      const currentView = context?.view || timeView;
-                      if (context && context.selectionState === 'finish') {
-                        if (currentView === 'hours') {
-                          setTimeView('minutes');
-                        } else if (currentView === 'minutes') {
-                          onMinutesChoosed(newValue);
-                        }
-                      }
-                    }}
+                    sx={{ width: '100%' }}
+                    onChange={handleTimeChange}
                     ampm={false}
                   />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="w-full h-12 text-base md:text-lg font-semibold rounded-md bg-primary text-primary-foreground hover:opacity-90"
+                      onClick={handleTimeOk}
+                    >
+                      OK
+                    </button>
+                  </div>
                 </div>
               </LocalizationProvider>
             </PopoverContent>
