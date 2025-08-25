@@ -26,7 +26,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
   const [isTimeOpen, setIsTimeOpen] = useState(false);
   const [timeView, setTimeView] = useState('hours'); // 'hours' | 'minutes'
   const [openedTimeStr, setOpenedTimeStr] = useState(null);
-  const closeTimerRef = useRef(null);
+  const [clockValue, setClockValue] = useState(() => dayjs()); // временное значение для TimeClock
 
   useEffect(() => {
     if (bottleToEdit) {
@@ -49,11 +49,15 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
     }
   }, [bottleToEdit]);
 
-  // Запоминаем базовое значение времени при открытии поповера, чтобы понимать, изменились ли минуты
+  // Запоминаем базовое значение времени при открытии поповера (для потенциальных UX-улучшений)
   useEffect(() => {
     if (isTimeOpen) {
       setTimeView('hours');
       setOpenedTimeStr(timeStr);
+      // инициализируем clockValue из текущего времени формы
+      const [h, m] = (timeStr || '00:00').split(':').map((v) => parseInt(v, 10) || 0);
+      const base = dayjs(startDate);
+      setClockValue(base.hour(h).minute(m).second(0).millisecond(0));
     } else {
       setOpenedTimeStr(null);
     }
@@ -154,46 +158,11 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                 {timeLabel()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent
-              className="z-[1001]"
-              style={{ padding: 8 }}
-              onPointerUpCapture={() => {
-                if (timeView === 'minutes' && openedTimeStr && openedTimeStr !== timeStr) {
-                  setIsTimeOpen(false);
-                  setTimeView('hours');
-                }
-              }}
-              onTouchEndCapture={() => {
-                if (timeView === 'minutes' && openedTimeStr && openedTimeStr !== timeStr) {
-                  setIsTimeOpen(false);
-                  setTimeView('hours');
-                }
-              }}
-            >
+            <PopoverContent className="z-[1001]" style={{ padding: 8 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-                  onPointerUp={() => {
-                    // На случай DnD: финализируем выбор минут по отпусканию указателя
-                    if (timeView === 'minutes') {
-                      // Закрываем, только если минуты реально изменились
-                      if (openedTimeStr && openedTimeStr !== timeStr) {
-                        setIsTimeOpen(false);
-                        setTimeView('hours');
-                      }
-                    }
-                  }}
-                  onTouchEnd={() => {
-                    if (timeView === 'minutes') {
-                      if (openedTimeStr && openedTimeStr !== timeStr) {
-                        setIsTimeOpen(false);
-                        setTimeView('hours');
-                      }
-                    }
-                  }}
-                >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <TimeClock
-                    value={dayjs(startDate)}
+                    value={clockValue}
                     views={["hours", "minutes"]}
                     view={timeView}
                     onViewChange={(v) => setTimeView(v)}
@@ -203,25 +172,23 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                       // newValue - Dayjs; синхронизируем локальное время
                       const h = String(newValue.hour()).padStart(2, '0');
                       const m = String(newValue.minute()).padStart(2, '0');
+                      setClockValue(newValue);
                       setTimeStr(`${h}:${m}`);
-                      const d = new Date(startDate);
-                      d.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
-                      setStartDate(d);
-                      // Дополнительно: если MUI передаёт состояние завершения выбора минут
-                      if (timeView === 'minutes' && context && context.selectionState === 'finish') {
-                        setIsTimeOpen(false);
-                        setTimeView('hours');
-                      }
-                      // Debounce-закрытие: если пользователь перестал тянуть минутную стрелку
-                      if (timeView === 'minutes') {
-                        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-                        closeTimerRef.current = setTimeout(() => {
-                          // закрываем только если поповер всё ещё открыт и минуты изменились
-                          if (isTimeOpen && openedTimeStr && openedTimeStr !== `${h}:${m}`) {
-                            setIsTimeOpen(false);
-                            setTimeView('hours');
-                          }
-                        }, 250);
+                      // Надёжная логика финализации выбора
+                      if (context && context.selectionState === 'finish') {
+                        if (timeView === 'hours') {
+                          // После выбора часа — переходим к минутам
+                          setTimeView('minutes');
+                        } else if (timeView === 'minutes') {
+                          // После выбора минут — фиксируем в startDate и закрываем
+                          const finalH = newValue.hour();
+                          const finalM = newValue.minute();
+                          const d = new Date(startDate);
+                          d.setHours(finalH, finalM, 0, 0);
+                          setStartDate(d);
+                          setIsTimeOpen(false);
+                          setTimeView('hours');
+                        }
                       }
                     }}
                     ampm={false}
