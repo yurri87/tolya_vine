@@ -198,6 +198,30 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
             <PopoverContent className="z-[1001]" style={{ padding: 8 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {/* Header with big time like MUI TimePicker */}
+                  <div className="flex items-baseline justify-center gap-2 select-none">
+                    <button
+                      type="button"
+                      onClick={() => setTimeView('hours')}
+                      className={
+                        `text-5xl md:text-6xl font-bold leading-none px-1 rounded ${timeView === 'hours' ? 'text-primary' : 'text-foreground'} ` +
+                        'hover:opacity-90 focus:outline-none'
+                      }
+                    >
+                      {String(clockValue.hour()).padStart(2, '0')}
+                    </button>
+                    <span className="text-5xl md:text-6xl font-bold leading-none">:</span>
+                    <button
+                      type="button"
+                      onClick={() => setTimeView('minutes')}
+                      className={
+                        `text-5xl md:text-6xl font-bold leading-none px-1 rounded ${timeView === 'minutes' ? 'text-primary' : 'text-foreground'} ` +
+                        'hover:opacity-90 focus:outline-none'
+                      }
+                    >
+                      {String(clockValue.minute()).padStart(2, '0')}
+                    </button>
+                  </div>
                   <TimeClock
                     value={clockValue}
                     views={["hours", "minutes"]}
