@@ -142,12 +142,17 @@
   width: 2px;
   height: 24px;
   background: black;
-  border-radius: 1px;
+  border-radius: 4px;
+}
+
+.progress-milestones .milestone.milestone-done {
+  background: #2ecc71; /* зеленый для выполненных */
+    width: 8px;
 }
 
 .progress-milestones .milestone-next {
-  background: red;
-    width: 4px;
+  background: #f39c12;
+    width: 8px;
 }
 
 

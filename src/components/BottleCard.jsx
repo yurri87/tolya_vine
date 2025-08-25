@@ -69,12 +69,19 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
   }
 
   // Позиции майлстоунов по шагам (в процентах ширины бара)
-  const milestones = (bottle.steps || [])
+  // Заменяем первый маркер шага стартовым (0%), чтобы количество рисок не увеличивалось
+  const stepDays = (bottle.steps || [])
     .filter(s => Number.isFinite(s.day) && s.day > 0)
-    .map(s => ({
-      day: s.day,
-      left: lastStepDay > 0 ? (s.day / lastStepDay) * 100 : 0,
-    }));
+    .map(s => s.day);
+  const minDay = stepDays.length ? Math.min(...stepDays) : 1;
+  const completedDays = new Set((bottle.steps || []).filter(s => s.isCompleted).map(s => s.day));
+  const stepMilestones = stepDays
+    .filter(d => d !== minDay)
+    .map(d => ({ day: d, left: lastStepDay > 0 ? (d / lastStepDay) * 100 : 0 }));
+  const milestones = [
+    { day: minDay, left: 0, isStart: true },
+    ...stepMilestones,
+  ];
 
   return (
     <div 
@@ -84,14 +91,20 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
       <div className="progress-bar-container">
         <div className="progress-bar" style={{ width: `${progress}%` }}></div>
         <div className="progress-milestones">
-          {milestones.map((m) => (
-            <span
-              key={m.day}
-              className={`milestone ${nextStep && nextStep.day === m.day ? 'milestone-next' : ''}`}
-              style={{ left: `calc(${m.left}% - 1px)` }}
-              title={`День ${m.day}`}
-            />
-          ))}
+          {milestones.map((m) => {
+            const isNext = !!nextStep && (nextStep.day === m.day || (m.isStart && nextStep.day === minDay));
+            const isDone = m.isStart ? completedDays.has(minDay) : completedDays.has(m.day);
+            const style = m.left === 0 ? { left: 0 } : { left: `calc(${m.left}% - 1px)` };
+            const title = m.isStart ? 'Старт' : `День ${m.day}`;
+            return (
+              <span
+                key={`${m.isStart ? 'start' : m.day}`}
+                className={`milestone ${isDone ? 'milestone-done' : ''} ${isNext ? 'milestone-next' : ''} ${m.isStart ? 'milestone-start' : ''}`}
+                style={style}
+                title={title}
+              />
+            );
+          })}
         </div>
       </div>
       <div className="card-main-content">

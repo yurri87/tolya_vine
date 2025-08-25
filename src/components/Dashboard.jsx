@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import BottleCard from './BottleCard';
 
 const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
@@ -77,12 +77,55 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
     return `Через ${dayNum} ${getDayNounPluralForm(dayNum)}`;
   };
 
+  // --- Таймер для обновления счетчиков раз в 30 сек ---
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((x) => x + 1), 30 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // --- Форматирование разницы как HH:MM ---
+  const formatHm = (diffMs) => {
+    if (diffMs == null) return '';
+    const totalMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}:${String(minutes).padStart(2, '0')}`;
+  };
+
+  // --- Расчет ближайшего события в группе ---
+  const getGroupCountdownLabel = (groupBottles) => {
+    if (!groupBottles || groupBottles.length === 0) return '';
+    let nearestTs = null;
+    const now = Date.now();
+    for (const b of groupBottles) {
+      const step = b.steps.find(s => !s.isCompleted);
+      if (!step || !step.date) continue;
+      const ts = new Date(step.date).getTime();
+      if (!isNaN(ts)) {
+        if (nearestTs === null || ts < nearestTs) nearestTs = ts;
+      }
+    }
+    if (nearestTs == null) return '';
+    const diffMs = nearestTs - now;
+    // Если просрочено, показываем 0:00
+    return formatHm(diffMs);
+  };
+
   // --- Вспомогательный компонент для рендера группы ---
   const BottleGroup = ({ title, groupBottles, alwaysShow = false, isToday = false }) => {
     if (!alwaysShow && (!groupBottles || groupBottles.length === 0)) return null;
+    const countdown = getGroupCountdownLabel(groupBottles);
     return (
       <div className="bottle-group">
-        <h2>{title} ({groupBottles ? groupBottles.length : 0})</h2>
+        <h2>
+          {title} ({groupBottles ? groupBottles.length : 0})
+          {countdown && (
+            <span style={{ marginLeft: 8, color: '#64748b' }}>
+              — осталось {countdown}
+            </span>
+          )}
+        </h2>
         <div className="cards-container">
           {groupBottles && groupBottles.length > 0 ? (
             groupBottles.map(bottle => (
