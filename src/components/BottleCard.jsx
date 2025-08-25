@@ -12,10 +12,10 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
   const allStepsCompleted = !nextStep;
 
   // Точное время до следующего шага (часы/минуты, с днями при необходимости)
-  const getTimeRemainingLabel = () => {
-    if (!nextStep || !nextStep.date) return '';
+  const getTimeRemainingInfo = () => {
+    if (!nextStep || !nextStep.date) return { text: '', isPast: false };
     const next = new Date(nextStep.date);
-    if (isNaN(next.getTime())) return '';
+    if (isNaN(next.getTime())) return { text: '', isPast: false };
     const now = new Date();
     let diffMs = next.getTime() - now.getTime();
     const isPast = diffMs <= 0;
@@ -36,7 +36,8 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
     if (hours > 0 || days > 0) parts.push(`${hours} ч`);
     parts.push(`${minutes} мин`);
 
-    return isPast ? `Просрочено на ${parts.join(' ')}` : `Через ${parts.join(' ')}`;
+    const text = isPast ? `Просрочено на ${parts.join(' ')}` : `Через ${parts.join(' ')}`;
+    return { text, isPast };
   };
 
   const getStatusClass = () => {
@@ -129,11 +130,20 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
               </div>
               <div className="step-title">
                 {step.ingredients}
-                {!step.isCompleted && nextStep && step.day === nextStep.day && (
-                  <span className="step-time-remaining" style={{ marginLeft: 8, color: '#64748b', fontSize: 12 }}>
-                    {getTimeRemainingLabel()}
-                  </span>
-                )}
+                {!step.isCompleted && nextStep && step.day === nextStep.day && (() => {
+                  const info = getTimeRemainingInfo();
+                  if (!info.text) return null;
+                  const baseStyle = { color: '#64748b', fontSize: 12 };
+                  // Просрочено — новая строка; иначе оставляем в той же строке
+                  const style = info.isPast
+                    ? { ...baseStyle, display: 'block', marginTop: 4 }
+                    : { ...baseStyle, marginLeft: 8 };
+                  return (
+                    <span className="step-time-remaining" style={style}>
+                      {info.text}
+                    </span>
+                  );
+                })()}
               </div>
               <div className="step-action">
                 {!step.isCompleted && nextStep && step.day === nextStep.day && (isToday || forceShowButton) && (
