@@ -9,6 +9,15 @@ function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const fetchPatchedRef = useRef(false);
+  const [highlightId, setHighlightId] = useState(null);
+
+  // Сбрасываем подсветку через короткое время (чуть больше 10с анимации),
+  // чтобы избежать повторных миганий при любых перерендерингах
+  useEffect(() => {
+    if (highlightId == null) return;
+    const t = setTimeout(() => setHighlightId(null), 10200);
+    return () => clearTimeout(t);
+  }, [highlightId]);
 
   // --- API Communication ---
 
@@ -109,7 +118,9 @@ function App() {
       if (!response.ok) {
         throw new Error('Failed to save bottle');
       }
-      
+      // Получаем сохраненный объект от сервера, чтобы взять реальный ID
+      const saved = await response.json().catch(() => null);
+      setHighlightId((saved && saved.id) ? saved.id : bottleWithSteps.id);
       await fetchBottles();
       setEditingBottle(null);
       setIsFormVisible(false); // <-- Вот это исправление
@@ -135,6 +146,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedBottle),
       });
+      setHighlightId(bottleId);
       await fetchBottles();
     } catch (error) {
       console.error('Error updating step:', error);
@@ -172,6 +184,7 @@ function App() {
 
       <Dashboard 
         bottles={bottles.filter(b => !b.isArchived)}
+        highlightId={highlightId}
         onUpdateStep={handleUpdateStep}
         onDeleteBottle={handleDeleteBottle}
         onEditBottle={handleEditBottle}

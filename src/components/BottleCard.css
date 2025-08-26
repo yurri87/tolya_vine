@@ -11,6 +11,16 @@
   transition: box-shadow 0.2s ease-in-out;
 }
 
+/* --- Highlight for newly added/edited cards: BG fade --- */
+@keyframes cardBgFade {
+  0%   { background-color: rgba(144, 238, 144, 0.6); }
+  100% { background-color: #ffffff; }
+}
+
+.bottle-card.blink-highlight {
+  animation: cardBgFade 10s ease-out 1;
+}
+
 .bottle-card.status-in-progress {
   border-left-color: #3498db; /* Blue for 'in progress' */
 }

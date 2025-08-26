@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BottleCard from './BottleCard';
 
-const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
+const Dashboard = ({ bottles, highlightId, onAddBottleClick, ...cardProps }) => {
 
   // --- Вспомогательная функция: точный расчет до следующего действия ---
   // Возвращает:
@@ -129,7 +129,7 @@ const Dashboard = ({ bottles, onAddBottleClick, ...cardProps }) => {
         <div className="cards-container">
           {groupBottles && groupBottles.length > 0 ? (
             groupBottles.map(bottle => (
-              <BottleCard key={bottle.id} bottle={bottle} {...cardProps} isToday={isToday} />
+              <BottleCard key={bottle.id} bottle={bottle} highlightId={highlightId} {...cardProps} isToday={isToday} />
             ))
           ) : (
             <p className="empty-group-message">Нет задач на завтра.</p>
