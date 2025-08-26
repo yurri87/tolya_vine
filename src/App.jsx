@@ -11,12 +11,9 @@ function App() {
   const fetchPatchedRef = useRef(false);
   const [highlightId, setHighlightId] = useState(null);
 
-  // Сбрасываем подсветку через короткое время (чуть больше 10с анимации),
-  // чтобы избежать повторных миганий при любых перерендерингах
+  // Подсветка теперь постоянная: не сбрасываем highlightId автоматически.
   useEffect(() => {
-    if (highlightId == null) return;
-    const t = setTimeout(() => setHighlightId(null), 10200);
-    return () => clearTimeout(t);
+    // no-op
   }, [highlightId]);
 
   // --- API Communication ---

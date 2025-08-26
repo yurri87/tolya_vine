@@ -6,21 +6,11 @@ import { Pencil } from 'lucide-react';
 const BottleCard = ({ bottle, highlightId, onUpdateStep, onEditBottle, isToday }) => {
   const [forceShowButton, setForceShowButton] = useState(false);
   const [completing, setCompleting] = useState(false);
-  const [blink, setBlink] = useState(false);
   const startDate = new Date(bottle.startDate);
   const formattedStartDate = startDate.toLocaleDateString('ru-RU');
 
   const nextStep = bottle.steps.find(s => !s.isCompleted);
   const allStepsCompleted = !nextStep;
-
-  // Подсветка (мигание) карточки после добавления/редактирования
-  useEffect(() => {
-    if (highlightId && highlightId === bottle.id) {
-      setBlink(true);
-      const t = setTimeout(() => setBlink(false), 10000);
-      return () => clearTimeout(t);
-    }
-  }, [highlightId, bottle.id]);
 
   // Точное время до следующего шага (часы/минуты, с днями при необходимости)
   const getTimeRemainingInfo = () => {
@@ -104,7 +94,7 @@ const BottleCard = ({ bottle, highlightId, onUpdateStep, onEditBottle, isToday }
 
   return (
     <div 
-      className={`bottle-card ${getStatusClass()} ${blink ? 'blink-highlight' : ''}`}
+      className={`bottle-card ${getStatusClass()} ${highlightId && highlightId === bottle.id ? 'blink-highlight' : ''}`}
       onDoubleClick={() => setForceShowButton(true)}
     >
       <div className="progress-bar-container">
