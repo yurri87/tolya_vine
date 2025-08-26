@@ -5,6 +5,7 @@ import { Pencil } from 'lucide-react';
 
 const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
   const [forceShowButton, setForceShowButton] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const startDate = new Date(bottle.startDate);
   const formattedStartDate = startDate.toLocaleDateString('ru-RU');
 
@@ -157,13 +158,22 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
               </div>
               <div className="step-action">
                 {!step.isCompleted && nextStep && step.day === nextStep.day && (isToday || forceShowButton) && (
-                  <Button 
-                      size="sm"
-                      onClick={() => onUpdateStep(bottle.id, step.day)} 
-                      className="btn-complete-step"
-                    >
-                      Выполнено
-                    </Button>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        setCompleting(true);
+                        await onUpdateStep(bottle.id, step.day);
+                      } finally {
+                        setCompleting(false);
+                      }
+                    }}
+                    className="btn-complete-step"
+                    disabled={completing}
+                  >
+                    {completing && <span className="btn-spinner" aria-hidden="true"></span>}
+                    {completing ? 'Сохранение…' : 'Выполнено'}
+                  </Button>
                 )}
               </div>
             </div>

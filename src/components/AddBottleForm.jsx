@@ -27,6 +27,8 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
   const [timeView, setTimeView] = useState('hours'); // 'hours' | 'minutes'
   const [openedTimeStr, setOpenedTimeStr] = useState(null);
   const [clockValue, setClockValue] = useState(() => dayjs()); // временное значение для TimeClock
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (bottleToEdit) {
@@ -103,7 +105,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
     onMinutesChoosed(norm);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!mass) {
       alert('Пожалуйста, укажите массу сырья.');
@@ -122,7 +124,12 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
       startDate: combined.toISOString(),
     };
 
-    onSave({ ...bottleData, id: bottleToEdit?.id });
+    try {
+      setIsSaving(true);
+      await onSave({ ...bottleData, id: bottleToEdit?.id });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -137,6 +144,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
           placeholder="Например, 5.5"
           required 
           step="0.1"
+          disabled={isSaving || isDeleting}
         />
       </div>
       <div className="form-group">
@@ -146,6 +154,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="То же что на бутылке"
+          disabled={isSaving || isDeleting}
         />
       </div>
       <div className="form-group">
@@ -155,6 +164,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Любые заметки..."
           className="notes-textarea"
+          disabled={isSaving || isDeleting}
         />
       </div>
       <div className="form-group">
@@ -163,7 +173,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
           {/* Date picker */}
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
-              <Button variant={"outline"}>
+              <Button variant={"outline"} disabled={isSaving || isDeleting}>
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {startDate ? format(startDate, 'PPP', { locale: ru }) : <span>Выберите дату</span>}
               </Button>
@@ -191,7 +201,7 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
           {/* Time picker (24h, MUI Clock) */}
           <Popover open={isTimeOpen} onOpenChange={setIsTimeOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" disabled={isSaving || isDeleting}>
                 {timeLabel()}
               </Button>
             </PopoverTrigger>
@@ -234,8 +244,9 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button
                       type="button"
-                      className="w-full h-12 text-base md:text-lg font-semibold rounded-md bg-primary text-primary-foreground hover:opacity-90"
+                      className="w-full h-12 text-base md:text-lg font-semibold rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
                       onClick={handleTimeOk}
+                      disabled={isSaving || isDeleting}
                     >
                       OK
                     </button>
@@ -252,15 +263,27 @@ const AddBottleForm = ({ bottleToEdit, onSave, onCancel, onDelete }) => {
             <Button 
               type="button" 
               variant="destructive" 
-              onClick={() => onDelete(bottleToEdit.id)}
+              onClick={async () => {
+                try {
+                  setIsDeleting(true);
+                  await onDelete(bottleToEdit.id);
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+              disabled={isSaving || isDeleting}
             >
-              Удалить
+              {isDeleting && <span className="btn-spinner" aria-hidden="true"></span>}
+              {isDeleting ? 'Удаление…' : 'Удалить'}
             </Button>
           )}
         </div>
         <div className="form-actions-right">
-          <Button type="button" variant="ghost" onClick={onCancel}>Отмена</Button>
-          <Button type="submit">{bottleToEdit ? 'Сохранить' : 'Добавить'}</Button>
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving || isDeleting}>Отмена</Button>
+          <Button type="submit" disabled={isSaving || isDeleting}>
+            {isSaving && <span className="btn-spinner" aria-hidden="true"></span>}
+            {bottleToEdit ? (isSaving ? 'Сохранение…' : 'Сохранить') : (isSaving ? 'Добавление…' : 'Добавить')}
+          </Button>
         </div>
       </div>
     </form>

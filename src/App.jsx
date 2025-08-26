@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import AddBottleForm from './components/AddBottleForm';
 import './App.css';
@@ -7,6 +7,8 @@ function App() {
   const [bottles, setBottles] = useState([]);
   const [editingBottle, setEditingBottle] = useState(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const fetchPatchedRef = useRef(false);
 
   // --- API Communication ---
 
@@ -24,6 +26,19 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Install global fetch wrapper once to track pending requests
+    if (!fetchPatchedRef.current && typeof window !== 'undefined' && window.fetch) {
+      const originalFetch = window.fetch;
+      window.fetch = async (...args) => {
+        setPendingCount((c) => c + 1);
+        try {
+          return await originalFetch(...args);
+        } finally {
+          setPendingCount((c) => Math.max(0, c - 1));
+        }
+      };
+      fetchPatchedRef.current = true;
+    }
     fetchBottles();
   }, [fetchBottles]);
 
@@ -165,6 +180,12 @@ function App() {
           setIsFormVisible(true);
         }} 
       />
+      {pendingCount > 0 && (
+        <div className="global-loading-overlay" aria-live="polite" aria-busy="true">
+          <div className="global-loading-spinner" />
+          <div className="global-loading-text">Загрузка…</div>
+        </div>
+      )}
       {isFormVisible && (
         <div className="modal-overlay">
           <AddBottleForm 
