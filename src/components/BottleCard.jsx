@@ -32,11 +32,18 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
     const minutes = Math.floor(diffMs / minuteMs);
 
     const parts = [];
-    if (days > 0) parts.push(`${days} д`);
-    if (hours > 0 || days > 0) parts.push(`${hours} ч`);
-    parts.push(`${minutes} мин`);
+    if (isPast) {
+      // Для просроченных: показываем только дни и часы, без минут. Единицы пишем вплотную к числам.
+      if (days > 0) parts.push(`${days}д`);
+      parts.push(`${hours}ч`); // часы показываем всегда, даже если 0
+      const text = `Просрочено на ${parts.join(' ')}`;
+      return { text, isPast };
+    }
 
-    const text = isPast ? `Просрочено на ${parts.join(' ')}` : `Через ${parts.join(' ')}`;
+    // Для будущих: как и для просроченных — только дни и часы, без минут. Единицы вплотную.
+    if (days > 0) parts.push(`${days}д`);
+    parts.push(`${hours}ч`);
+    const text = `Через ${parts.join(' ')}`;
     return { text, isPast };
   };
 
@@ -133,11 +140,14 @@ const BottleCard = ({ bottle, onUpdateStep, onEditBottle, isToday }) => {
                 {!step.isCompleted && nextStep && step.day === nextStep.day && (() => {
                   const info = getTimeRemainingInfo();
                   if (!info.text) return null;
-                  const baseStyle = { color: '#64748b', fontSize: 12 };
-                  // Просрочено — новая строка; иначе оставляем в той же строке
-                  const style = info.isPast
-                    ? { ...baseStyle, display: 'block', marginTop: 4 }
-                    : { ...baseStyle, marginLeft: 8 };
+                  const baseStyle = { fontSize: 12, fontWeight: 700 };
+                  // Будущее — черный жирный; просрочено — красный жирный. Всегда с новой строки.
+                  const style = {
+                    ...baseStyle,
+                    color: info.isPast ? '#ef4444' : '#111827',
+                    display: 'block',
+                    marginTop: 4,
+                  };
                   return (
                     <span className="step-time-remaining" style={style}>
                       {info.text}
