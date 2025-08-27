@@ -66,9 +66,19 @@ const BottleCard = ({ bottle, highlightId, onUpdateStep, onEditBottle, isToday }
 
   const today = new Date();
   const lastStepDay = bottle.steps.length > 0 ? Math.max(...bottle.steps.map(s => s.day)) : 1;
-  // Прогресс считаем по минутам (более точный и плавный, чем по дням)
-  const minutesPassed = Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60)));
-  const totalMinutes = Math.max(1, lastStepDay * 24 * 60);
+  // Часы/миллисекунды: вычисляем длительность строго по времени, если есть даты шагов
+  const startTs = startDate.getTime();
+  const stepDates = (bottle.steps || [])
+    .map(s => ({ s, ts: s.date ? new Date(s.date).getTime() : NaN }))
+    .filter(x => !isNaN(x.ts));
+  const lastStepTs = stepDates.length ? Math.max(...stepDates.map(x => x.ts)) : NaN;
+  const totalMsByDates = !isNaN(lastStepTs) ? Math.max(1, lastStepTs - startTs) : NaN;
+  const fallbackTotalMs = Math.max(1, lastStepDay * 24 * 60 * 60 * 1000);
+  const totalMs = !isNaN(totalMsByDates) ? totalMsByDates : fallbackTotalMs;
+
+  // Прогресс считаем по минутам от старта к текущему времени, ограничиваем 0..total
+  const minutesPassed = Math.max(0, Math.floor((today.getTime() - startTs) / (1000 * 60)));
+  const totalMinutes = Math.max(1, Math.floor(totalMs / (1000 * 60)));
 
   let progress = 0;
   if (allStepsCompleted) {
@@ -77,20 +87,21 @@ const BottleCard = ({ bottle, highlightId, onUpdateStep, onEditBottle, isToday }
     progress = Math.min(100, (minutesPassed / totalMinutes) * 100);
   }
 
-  // Позиции майлстоунов по шагам (в процентах ширины бара)
-  // Заменяем первый маркер шага стартовым (0%), чтобы количество рисок не увеличивалось
-  const stepDays = (bottle.steps || [])
-    .filter(s => Number.isFinite(s.day) && s.day > 0)
-    .map(s => s.day);
+  // Позиции майлстоунов по шагам (в процентах) считаем по времени, если даты есть; иначе по дням
+  const stepsList = (bottle.steps || []).filter(s => Number.isFinite(s.day) && s.day > 0);
+  const stepDays = stepsList.map(s => s.day);
   const minDay = stepDays.length ? Math.min(...stepDays) : 1;
-  const completedDays = new Set((bottle.steps || []).filter(s => s.isCompleted).map(s => s.day));
-  const stepMilestones = stepDays
-    .filter(d => d !== minDay)
-    .map(d => ({ day: d, left: lastStepDay > 0 ? (d / lastStepDay) * 100 : 0 }));
-  const milestones = [
-    { day: minDay, left: 0, isStart: true },
-    ...stepMilestones,
-  ];
+  const completedDays = new Set(stepsList.filter(s => s.isCompleted).map(s => s.day));
+  const milestones = stepsList.map((s) => {
+    const ts = s.date ? new Date(s.date).getTime() : NaN;
+    const leftByTime = !isNaN(ts) ? Math.max(0, Math.min(100, ((ts - startTs) / totalMs) * 100)) : null;
+    const left = leftByTime == null ? (lastStepDay > 0 ? (s.day / lastStepDay) * 100 : 0) : leftByTime;
+    return { day: s.day, left, isStart: s.day === minDay };
+  })
+  // Заменяем позицию стартового маркера на 0%
+  .map(m => m.isStart ? { ...m, left: 0 } : m)
+  // Убираем возможные дубликаты по дню, оставляем первый (порядок исходных шагов сохраняется)
+  .filter((m, idx, arr) => arr.findIndex(x => x.day === m.day) === idx);
 
   return (
     <div 

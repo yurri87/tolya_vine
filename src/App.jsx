@@ -85,14 +85,16 @@ function App() {
           title: 'Первая добавка сахара',
           ingredients: `Сахар: ${z2.toFixed(2)} кг, Вода: ${y2.toFixed(2)} л`,
           isCompleted: false,
-          date: new Date(new Date(start).setDate(start.getDate() + 9)).toISOString(),
+          // Строго по часам: 10 суток (240 часов) после старта
+          date: new Date(start.getTime() + (10 * 24 * 60 * 60 * 1000)).toISOString(),
         },
         {
           day: 13,
           title: 'Вторая добавка сахара',
           ingredients: `Сахар: ${z3.toFixed(2)} кг`,
           isCompleted: false,
-          date: new Date(new Date(start).setDate(start.getDate() + 12)).toISOString(),
+          // Строго по часам: 13 суток (312 часов) после старта
+          date: new Date(start.getTime() + (13 * 24 * 60 * 60 * 1000)).toISOString(),
         },
       ],
       isArchived: false,
@@ -101,9 +103,21 @@ function App() {
 
   const handleSaveBottle = async (bottleData) => {
     const isUpdating = !!bottleData.id;
-    const bottleWithSteps = prepareBottleData(
+    const prev = isUpdating ? bottles.find(b => b.id === bottleData.id) : null;
+    const baseBottle = prepareBottleData(
       isUpdating ? bottleData : { ...bottleData, id: Date.now() }
     );
+
+    // Сохраняем отметки выполнения шагов при редактировании
+    const bottleWithSteps = (prev && Array.isArray(prev.steps))
+      ? {
+          ...baseBottle,
+          steps: baseBottle.steps.map((s) => {
+            const prevStep = prev.steps.find(ps => ps.day === s.day);
+            return prevStep ? { ...s, isCompleted: !!prevStep.isCompleted } : s;
+          }),
+        }
+      : baseBottle;
 
     try {
       const response = await fetch('/api/bottles', {
