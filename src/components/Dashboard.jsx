@@ -115,16 +115,10 @@ const Dashboard = ({ bottles, highlightId, onAddBottleClick, ...cardProps }) => 
   // --- Вспомогательный компонент для рендера группы ---
   const BottleGroup = ({ title, groupBottles, alwaysShow = false, isToday = false }) => {
     if (!alwaysShow && (!groupBottles || groupBottles.length === 0)) return null;
-    const countdown = getGroupCountdownLabel(groupBottles);
     return (
       <div className="bottle-group">
         <h2>
           {title} ({groupBottles ? groupBottles.length : 0})
-          {countdown && (
-            <span style={{ marginLeft: 8, color: '#64748b' }}>
-              — осталось {countdown}
-            </span>
-          )}
         </h2>
         <div className="cards-container">
           {groupBottles && groupBottles.length > 0 ? (
